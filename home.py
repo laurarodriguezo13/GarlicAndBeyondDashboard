@@ -10,56 +10,6 @@ Fecha: 2025
 
 import streamlit as st
 import datetime
-
-# ========== DEBUG AVANZADO TEMPORAL ==========
-st.write("🔍 **DEBUG AVANZADO - SharePoint Connectivity**")
-
-# Importar el sistema SharePoint
-from auth.sharepoint_auth import sharepoint_system
-
-# HABILITAR logging detallado
-sharepoint_system.disable_silent_mode()
-
-# Test 1: Información del sistema
-st.write("**1. Info del sistema:**")
-info = sharepoint_system.get_system_info()
-st.json(info)
-
-# Test 2: Test de token
-st.write("**2. Test de token:**")
-token = sharepoint_system.get_access_token(force_refresh=True)
-if token:
-    st.write("✅ Token obtenido:", token[:20] + "...")
-else:
-    st.write("❌ NO se pudo obtener token")
-
-# Test 3: URL específica CFI RRHH
-st.write("**3. Test URL CFI RRHH:**")
-test_url = st.secrets["sharepoint_links"]["cfi"]["rrhh"]
-st.write("URL original:", test_url)
-
-# Convertir a Graph URL
-graph_url = sharepoint_system.convert_sharepoint_url_to_graph_api(test_url)
-st.write("Graph URL:", graph_url)
-
-# Test 4: Descarga real
-st.write("**4. Test de descarga:**")
-with st.spinner("Descargando..."):
-    result = sharepoint_system.download_excel_from_sharepoint(test_url, all_sheets=False)
-
-if result is not None:
-    st.write("✅ ¡DESCARGA EXITOSA!")
-    st.write("Tipo de resultado:", type(result))
-    if hasattr(result, 'shape'):
-        st.write("Dimensiones:", result.shape)
-        st.write("Primeras 5 filas:")
-        st.dataframe(result.head())
-else:
-    st.write("❌ DESCARGA FALLÓ")
-
-st.write("========== FIN DEBUG ==========")
-# ========== FIN DEBUG AVANZADO ==========
-
 # ================================================================
 # CONFIGURACIÓN DE PÁGINA
 # ================================================================
