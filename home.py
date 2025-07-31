@@ -11,6 +11,21 @@ Fecha: 2025
 import streamlit as st
 import datetime
 
+# DEBUG: Ver qué secrets ve Streamlit Cloud
+st.write("🔍 DEBUG - Secrets disponibles:")
+st.write("Keys principales:", list(st.secrets.keys()))
+
+if "sharepoint_auth" in st.secrets:
+    st.write("✅ sharepoint_auth encontrado")
+else:
+    st.write("❌ sharepoint_auth NO encontrado")
+
+if "sharepoint_links" in st.secrets:
+    st.write("✅ sharepoint_links encontrado")
+    st.write("Secciones:", list(st.secrets["sharepoint_links"].keys()))
+else:
+    st.write("❌ sharepoint_links NO encontrado")
+
 # ================================================================
 # CONFIGURACIÓN DE PÁGINA
 # ================================================================
