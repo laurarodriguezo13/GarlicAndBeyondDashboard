@@ -41,6 +41,17 @@ try:
     st.write("✅ Método 1 funciona:", test1[:50] + "...")
 except Exception as e:
     st.write("❌ Método 1 falló:", str(e))
+# DEBUG: Test de conectividad
+st.write("🔍 DEBUG - Test de URL:")
+test_url = st.secrets["sharepoint_links"]["cfi"]["rrhh"]
+st.write("URL completa:", test_url)
+
+# Test si es una URL de sharing vs URL directa
+if ":x:" in test_url:
+    st.write("⚠️ Esta es una URL de SHARING - no funciona para API")
+    st.write("Necesitas la URL DIRECTA del archivo")
+else:
+    st.write("✅ Esta parece ser una URL directa")
 
 # ================================================================
 # CONFIGURACIÓN DE PÁGINA
