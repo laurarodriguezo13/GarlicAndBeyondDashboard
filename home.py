@@ -11,47 +11,54 @@ Fecha: 2025
 import streamlit as st
 import datetime
 
-# DEBUG: Ver qué secrets ve Streamlit Cloud
-st.write("🔍 DEBUG - Secrets disponibles:")
-st.write("Keys principales:", list(st.secrets.keys()))
+# ========== DEBUG AVANZADO TEMPORAL ==========
+st.write("🔍 **DEBUG AVANZADO - SharePoint Connectivity**")
 
-if "sharepoint_auth" in st.secrets:
-    st.write("✅ sharepoint_auth encontrado")
+# Importar el sistema SharePoint
+from auth.sharepoint_auth import sharepoint_system
+
+# HABILITAR logging detallado
+sharepoint_system.disable_silent_mode()
+
+# Test 1: Información del sistema
+st.write("**1. Info del sistema:**")
+info = sharepoint_system.get_system_info()
+st.json(info)
+
+# Test 2: Test de token
+st.write("**2. Test de token:**")
+token = sharepoint_system.get_access_token(force_refresh=True)
+if token:
+    st.write("✅ Token obtenido:", token[:20] + "...")
 else:
-    st.write("❌ sharepoint_auth NO encontrado")
+    st.write("❌ NO se pudo obtener token")
 
-if "sharepoint_links" in st.secrets:
-    st.write("✅ sharepoint_links encontrado")
-    st.write("Secciones:", list(st.secrets["sharepoint_links"].keys()))
-else:
-    st.write("❌ sharepoint_links NO encontrado")
-
-# DEBUG: Ver estructura exacta de CFI
-st.write("🔍 DEBUG - Estructura CFI:")
-try:
-    st.write("sharepoint_links.cfi:", dict(st.secrets["sharepoint_links"]["cfi"]))
-except Exception as e:
-    st.write("❌ Error accediendo CFI:", str(e))
-
-# DEBUG: Ver si hay diferencia con local
-st.write("🔍 DEBUG - ¿Cómo accede el código?")
-try:
-    # Probar diferentes formas de acceso
-    test1 = st.secrets["sharepoint_links"]["cfi"]["rrhh"]
-    st.write("✅ Método 1 funciona:", test1[:50] + "...")
-except Exception as e:
-    st.write("❌ Método 1 falló:", str(e))
-# DEBUG: Test de conectividad
-st.write("🔍 DEBUG - Test de URL:")
+# Test 3: URL específica CFI RRHH
+st.write("**3. Test URL CFI RRHH:**")
 test_url = st.secrets["sharepoint_links"]["cfi"]["rrhh"]
-st.write("URL completa:", test_url)
+st.write("URL original:", test_url)
 
-# Test si es una URL de sharing vs URL directa
-if ":x:" in test_url:
-    st.write("⚠️ Esta es una URL de SHARING - no funciona para API")
-    st.write("Necesitas la URL DIRECTA del archivo")
+# Convertir a Graph URL
+graph_url = sharepoint_system.convert_sharepoint_url_to_graph_api(test_url)
+st.write("Graph URL:", graph_url)
+
+# Test 4: Descarga real
+st.write("**4. Test de descarga:**")
+with st.spinner("Descargando..."):
+    result = sharepoint_system.download_excel_from_sharepoint(test_url, all_sheets=False)
+
+if result is not None:
+    st.write("✅ ¡DESCARGA EXITOSA!")
+    st.write("Tipo de resultado:", type(result))
+    if hasattr(result, 'shape'):
+        st.write("Dimensiones:", result.shape)
+        st.write("Primeras 5 filas:")
+        st.dataframe(result.head())
 else:
-    st.write("✅ Esta parece ser una URL directa")
+    st.write("❌ DESCARGA FALLÓ")
+
+st.write("========== FIN DEBUG ==========")
+# ========== FIN DEBUG AVANZADO ==========
 
 # ================================================================
 # CONFIGURACIÓN DE PÁGINA
