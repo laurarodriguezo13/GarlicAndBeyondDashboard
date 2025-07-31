@@ -5,14 +5,14 @@ Dashboard de inventario para KCTN con KPIs principales y tabla de datos.
 Diseño simple y elegante con estética Garlic & Beyond.
 
 Funcionalidades:
-- 2 KPI Cards principales (Total Kg, Total Euros)
+- 3 KPI Cards principales (Total Kg, Total Euros, Precio Promedio/Kg)
 - Tabla de inventario grande y estilizada  
 - Carga desde SharePoint
 - Estética corporativa Garlic & Beyond
 
 Autor: GANDB Dashboard Team
 Fecha: 2025
-Versión: 1.0 - Dashboard Inventario KCTN
+Versión: 1.1 - Dashboard Inventario KCTN (Actualizado con Precio Promedio)
 """
 
 import streamlit as st
@@ -87,7 +87,7 @@ def safe_import():
 excel_available, controller_available, get_dataframe, GarlicInventarioController = safe_import()
 
 # ================================================================
-# CSS PERSONALIZADO PARA GARLIC & BEYOND - INVENTARIO
+# CSS PERSONALIZADO PARA GARLIC & BEYOND - INVENTARIO (3 CARDS)
 # ================================================================
 st.markdown("""
 <style>
@@ -102,6 +102,7 @@ st.markdown("""
         --warning-color: #FF9800;
         --error-color: #F44336;
         --info-color: #2196F3;
+        --accent-color: #9C27B0;
         --text-primary: #1B5E20;
         --text-secondary: #388E3C;
         --background-white: #ffffff;
@@ -168,10 +169,10 @@ st.markdown("""
         opacity: 0.9;
     }
     
-    /* KPI Cards específicas para Inventario */
+    /* KPI Cards específicas para Inventario (ahora 3 cards) */
     .kpi-card {
         background: var(--background-white);
-        padding: 2.5rem 2rem;
+        padding: 2rem 1.5rem;
         border-radius: 20px;
         border: 1px solid var(--border-light);
         box-shadow: var(--shadow-xl);
@@ -205,9 +206,13 @@ st.markdown("""
         background: linear-gradient(90deg, #FF9800, #FFB74D);
     }
     
+    .kpi-card-precio::before {
+        background: linear-gradient(90deg, #9C27B0, #BA68C8);
+    }
+    
     /* Métricas para inventario */
     .kpi-title {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 600;
         color: var(--text-primary);
         margin-bottom: 1.5rem;
@@ -220,7 +225,7 @@ st.markdown("""
     }
     
     .kpi-value-huge {
-        font-size: 3rem;
+        font-size: 2.5rem;
         font-weight: 800;
         color: var(--primary-color);
         margin: 1rem 0;
@@ -229,7 +234,7 @@ st.markdown("""
     }
     
     .kpi-subtitle {
-        font-size: 1rem;
+        font-size: 0.9rem;
         font-weight: 500;
         color: var(--text-secondary);
         margin-top: 1rem;
@@ -474,21 +479,6 @@ st.markdown("""
         border-color: var(--border-light) !important;
     }
     
-    /* Proveedores pendientes - estilo especial */
-    .inventory-table-container [data-testid="stDataFrame"] tbody tr:has(td:first-child:contains("pendiente")) {
-        position: relative;
-    }
-    
-    .inventory-table-container [data-testid="stDataFrame"] tbody tr:has(td:first-child:contains("pendiente"))::before {
-        content: '⏳';
-        position: absolute;
-        left: 0.5rem;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 1.2rem;
-        opacity: 0.6;
-    }
-    
     /* Animación sutil para números */
     .inventory-table-container [data-testid="stDataFrame"] tbody td:nth-child(2),
     .inventory-table-container [data-testid="stDataFrame"] tbody td:nth-child(3),
@@ -538,15 +528,21 @@ st.markdown("""
     header {visibility: hidden;}
     .stDeployButton {visibility: hidden;}
     
-    /* Responsive design */
+    /* Responsive design para 3 cards */
     @media (max-width: 768px) {
         .main-header h1 { font-size: 2rem; }
         .main-header h2 { font-size: 1.5rem; }
-        .kpi-card { padding: 2rem 1.5rem; }
-        .kpi-value-huge { font-size: 2.5rem; }
+        .kpi-card { padding: 1.5rem 1rem; margin-bottom: 1.5rem; }
+        .kpi-value-huge { font-size: 2rem; }
+        .kpi-title { font-size: 1rem; }
         .section-header { padding: 1rem 1.5rem; }
-        .inventory-table tbody td { padding: 1rem 0.5rem; font-size: 0.9rem; }
-        .inventory-table thead th { padding: 1rem 0.5rem; font-size: 1rem; }
+        .inventory-table-container [data-testid="stDataFrame"] tbody td { padding: 1rem 0.5rem; font-size: 0.9rem; }
+        .inventory-table-container [data-testid="stDataFrame"] thead th { padding: 1rem 0.5rem; font-size: 1rem; }
+    }
+    
+    @media (max-width: 1200px) {
+        .kpi-value-huge { font-size: 2.2rem; }
+        .kpi-title { font-size: 1rem; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -725,7 +721,7 @@ if controller and controller.is_initialized:
     kpis = controller.get_kpis()
     
     # ================================================================
-    # SECCIÓN 1: KPI CARDS PRINCIPALES (2 cards grandes)
+    # SECCIÓN 1: KPI CARDS PRINCIPALES (AHORA 3 CARDS)
     # ================================================================
     st.markdown("""
     <div class="section-header">
@@ -733,7 +729,8 @@ if controller and controller.is_initialized:
     </div>
     """, unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2)
+    # CAMBIO PRINCIPAL: 3 columnas en lugar de 2
+    col1, col2, col3 = st.columns(3)
     
     with col1:
         # KPI Card 1: Total Kilogramos
@@ -749,13 +746,23 @@ if controller and controller.is_initialized:
     with col2:
         # KPI Card 2: Total Euros
         total_euros_formatted = format_number(kpis['total_euros'])
-        precio_promedio = format_number(kpis['precio_promedio_kg'], 3)
         display_kpi_card_inventario(
             "Valor Total",
             "💰",
             f"€{total_euros_formatted}",
-            f"Precio promedio: €{precio_promedio}/kg",
+            f"Valor total del inventario",
             "euros"
+        )
+    
+    with col3:
+        # KPI Card 3: NUEVA - Precio Promedio por Kg
+        precio_promedio = format_number(kpis['precio_promedio_kg'], 3)
+        display_kpi_card_inventario(
+            "Precio Promedio",
+            "💎",
+            f"€{precio_promedio}/kg",
+            f"Precio medio ponderado por volumen",
+            "precio"
         )
     
     # ================================================================
@@ -924,7 +931,7 @@ else:
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: var(--text-secondary); padding: 2rem 0;'>
-    <p><strong>🧄 Garlic & Beyond Dashboard Inventario KCTN v1.0</strong></p>
+    <p><strong>🧄 Garlic & Beyond Dashboard Inventario KCTN v1.1</strong></p>
     <p>Sistema de control de inventario teórico por proveedor • Campaña 2025/2026</p>
     <p>© 2025 Garlic & Beyond - Todos los derechos reservados</p>
 </div>
