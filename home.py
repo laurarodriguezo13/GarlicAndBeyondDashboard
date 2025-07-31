@@ -26,6 +26,22 @@ if "sharepoint_links" in st.secrets:
 else:
     st.write("❌ sharepoint_links NO encontrado")
 
+# DEBUG: Ver estructura exacta de CFI
+st.write("🔍 DEBUG - Estructura CFI:")
+try:
+    st.write("sharepoint_links.cfi:", dict(st.secrets["sharepoint_links"]["cfi"]))
+except Exception as e:
+    st.write("❌ Error accediendo CFI:", str(e))
+
+# DEBUG: Ver si hay diferencia con local
+st.write("🔍 DEBUG - ¿Cómo accede el código?")
+try:
+    # Probar diferentes formas de acceso
+    test1 = st.secrets["sharepoint_links"]["cfi"]["rrhh"]
+    st.write("✅ Método 1 funciona:", test1[:50] + "...")
+except Exception as e:
+    st.write("❌ Método 1 falló:", str(e))
+
 # ================================================================
 # CONFIGURACIÓN DE PÁGINA
 # ================================================================
